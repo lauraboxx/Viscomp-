@@ -1,3 +1,4 @@
+
 import cv2
 import numpy as np
 
@@ -57,7 +58,7 @@ if len(vertical) >= 2 and len(horizontal) >= 2:
 else:
     print("Nicht genug Linien erkannt.")
 
-print("HelloWorld1")
+
 
 
 def split_into_cells(warped):
@@ -73,17 +74,17 @@ def split_into_cells(warped):
             cells.append(cell)
     
     return cells
-print("HelloWorld2")
+
 # Spielfeld aufteilen
 cells = split_into_cells(warped)
 
 # Vorschau der Zellen anzeigen
 for i, cell in enumerate(cells):
     cv2.imshow(f"Zelle {i}", cell)
-    cv2.waitKey(2000)
+    cv2.waitKey(200)
 
     cv2.destroyAllWindows()
-print("HelloWorld1")
+
 
 def classify_cell(cell_img):
     gray = cv2.cvtColor(cell_img, cv2.COLOR_BGR2GRAY)
@@ -120,7 +121,7 @@ def classify_cell(cell_img):
     if np.mean(gray) > 200:
         return "leer"
     else:
-        return "undefiniert"
+        return "-"
 
 
 
@@ -129,3 +130,45 @@ for i, cell in enumerate(cells):
     label = classify_cell(cell)
     spielstand.append(label)
     print(f"Zelle {i}: {label}")
+
+
+
+
+def draw_play_state(image, labels):
+    output = image.copy()
+    cell_size = image.shape[0] // 3  # z.B. 100 bei 300x300
+
+    for i, label in enumerate(labels):
+        row = i // 3
+        col = i % 3
+        x = col * cell_size + cell_size // 2
+        y = row * cell_size + cell_size // 2
+
+        color = (0, 255, 0) if label == "O" else (255, 0, 0) if label == "X" else (128, 128, 128)
+        
+        cv2.putText(
+            output,
+            label,
+            (x - 20, y + 10),  # leicht versetzt zentrieren
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1.8,
+            color,
+            2,
+            cv2.LINE_AA
+        )
+    
+    return output
+
+
+# Spielstand klassifizieren
+spielstand = [classify_cell(cell) for cell in cells]
+
+# Visualisierung erzeugen
+visualized_board = draw_play_state(warped, spielstand)
+
+# Anzeigen
+cv2.imshow("Erkannter Spielstand", visualized_board)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+
